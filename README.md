@@ -24,7 +24,7 @@ _List all locations._
 
 ## Worldguard
 **/rg flag [regionname] onewayelytra allow**
-_Set the flag for a specifig region._
+_Set the flag for a specific region._
 ## Configurations
 
 <details>
