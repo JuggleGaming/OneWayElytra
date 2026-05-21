@@ -32,6 +32,8 @@ public final class OneWayElytra extends JavaPlugin {
     private WorldguardFlags wgFlag;
     private WorldguardHook worldguardHook;
 
+    private boolean isWorldguardInstalled;
+
     @Override
     public void onLoad() {
         connectToWorldguard();
@@ -53,7 +55,12 @@ public final class OneWayElytra extends JavaPlugin {
         ccs.sendMessage(prefix + "Listeners successfully registered!");
         registerCommands();
         ccs.sendMessage(prefix + "Commands successfully registered!");
-
+        isWorldguardInstalled = WorldguardUtils.isWorldGuardInstalled();
+        if(isWorldguardInstalled) {
+            ccs.sendMessage(prefix + "WorldGuard: connected");
+        } else {
+            ccs.sendMessage(prefix + "WorldGuard: not found");
+        }
         ccs.sendMessage(prefix + "*~*~*~*~*~*~*~* <<OneWayElytra>> *~*~*~*~*~*~*~*");
         ccs.sendMessage(prefix + "Plugin successfully loaded!");
         ccs.sendMessage(prefix + "Version: " + getDescription().getVersion());
