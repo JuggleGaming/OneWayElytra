@@ -6,6 +6,7 @@ import de.jugglegaming.oneWayElytra.managers.FileManager;
 import de.jugglegaming.oneWayElytra.managers.RadiusManager;
 import de.jugglegaming.oneWayElytra.utils.Tools;
 import de.jugglegaming.oneWayElytra.utils.WorldguardFlags;
+import de.jugglegaming.oneWayElytra.utils.WorldguardHook;
 import de.jugglegaming.oneWayElytra.utils.WorldguardUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -29,6 +30,7 @@ public final class OneWayElytra extends JavaPlugin {
     private OneWayElytraListener oneWayElytraListener;
 
     private WorldguardFlags wgFlag;
+    private WorldguardHook worldguardHook;
 
     @Override
     public void onLoad() {
@@ -79,7 +81,7 @@ public final class OneWayElytra extends JavaPlugin {
 
     @EventHandler
     public void registerListener() {
-        oneWayElytraListener = new OneWayElytraListener(this);
+        oneWayElytraListener = new OneWayElytraListener(this, worldguardHook);
         pluginManager.registerEvents(oneWayElytraListener, this);
     }
 
@@ -93,6 +95,7 @@ public final class OneWayElytra extends JavaPlugin {
         Plugin worldGuard = pluginManager.getPlugin("WorldGuard");
         if(WorldguardUtils.isWorldGuardInstalled()){
             WorldguardFlags.load();
+            worldguardHook = new WorldguardHook();
             ccs.sendMessage("[OneWayElytra] Successfully connected to WorldGuard!");
         } else {
             ccs.sendMessage("[OneWayElytra] Worldguard not found.");
