@@ -1,8 +1,16 @@
 package de.jugglegaming.oneWayElytra.listeners;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
+import com.sk89q.worldguard.protection.regions.RegionQuery;
 import de.jugglegaming.oneWayElytra.OneWayElytra;
 import de.jugglegaming.oneWayElytra.utils.ActionBar;
-import de.jugglegaming.oneWayElytra.utils.WorldguardHook;
+import de.jugglegaming.oneWayElytra.utils.WorldguardFlags;
+import de.jugglegaming.oneWayElytra.utils.WorldguardUtils;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
@@ -27,69 +35,46 @@ public class OneWayElytraListener implements Listener {
     private List<Location> positions = new ArrayList<>();
 
     private OneWayElytra oneWayElytra;
-    private WorldguardHook worldguardHook;
 
-    public OneWayElytraListener(OneWayElytra oneWayElytra, WorldguardHook worldguardHook) {
+    public OneWayElytraListener(OneWayElytra oneWayElytra){
         this.oneWayElytra = oneWayElytra;
-        this.worldguardHook = worldguardHook;
         this.radius = oneWayElytra.getFileManager().getConfig().getInt("radius");
         Bukkit.getScheduler().runTaskTimer(oneWayElytra, () -> {
 
             for (Player player : Bukkit.getOnlinePlayers()) {
+                if(WorldguardUtils.isWorldGuardInstalled()){
 
-                boolean wgAllowed = false;
+                    com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
+                    RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+                    RegionQuery query = container.createQuery();
+                    ApplicableRegionSet set = query.getApplicableRegions(loc);
+                    LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
 
-                if (worldguardHook != null) {
-                    wgAllowed = worldguardHook.canFly(player);
-                }
+                    boolean wgAllowed = set.testState(localPlayer, WorldguardFlags.ONEWAYELYTRA);
+                    boolean inRadiusArea = oneWayElytra.getRadiusManager().isInAnyArea(player.getLocation());
 
-                boolean inRadiusArea =
-                        oneWayElytra.getRadiusManager()
-                                .isInAnyArea(player.getLocation());
-
-                if ((wgAllowed || inRadiusArea)
-                        && !playersFlying.contains(player)
-                        && player.isOnGround()) {
-
-                    if (player.getGameMode() == GameMode.SURVIVAL
-                            || (player.getGameMode() == GameMode.ADVENTURE
-                            && oneWayElytra.getFileManager()
-                            .getConfig()
-                            .getBoolean("adventure"))) {
-
-                        player.setAllowFlight(true);
+                    if ((wgAllowed || inRadiusArea) && !playersFlying.contains(player) && player.isOnGround()) {
+                        if(player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE && oneWayElytra.getFileManager().getConfig().getBoolean("adventure")) {
+                            player.setAllowFlight(true);
+                        }
                     }
+
                 }
 
-                if (!(wgAllowed || inRadiusArea) && !playersFlying.contains(player)) {
-                    player.setAllowFlight(false);
-                }
-
-                if (player.getGameMode() == GameMode.SURVIVAL
-                        || player.getGameMode() == GameMode.ADVENTURE) {
-
+                if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
                     if (playersFlying.contains(player)
-                            && !player.getLocation()
-                            .getBlock()
-                            .getRelative(BlockFace.DOWN)
-                            .getType()
-                            .isAir()) {
+                            && !player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().isAir()) {
 
                         player.setGliding(false);
                         playersBoosted.remove(player);
 
-                        Bukkit.getScheduler().runTaskLater(
-                                oneWayElytra,
-                                () -> {
-                                    playersFlying.remove(player);
-                                    player.setAllowFlight(false);
-                                },
-                                5
-                        );
+                        Bukkit.getScheduler().runTaskLater(oneWayElytra, () -> {
+                            playersFlying.remove(player);
+                            player.setAllowFlight(false);
+                        }, 5);
                     }
                 }
             }
-
         }, 0, 3);
     }
 
@@ -114,16 +99,20 @@ public class OneWayElytraListener implements Listener {
 
     public boolean isAllowedToFly(Player player) {
         boolean wgAllowed = false;
-        if (worldguardHook != null) {
-            wgAllowed = worldguardHook.canFly(player);
+        if (WorldguardUtils.isWorldGuardInstalled()) {
+            com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
+            RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+            RegionQuery query = container.createQuery();
+            ApplicableRegionSet set = query.getApplicableRegions(loc);
+            LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
+
+            wgAllowed = set.testState(localPlayer, WorldguardFlags.ONEWAYELYTRA);
         }
 
-        boolean inRadiusArea =
-                oneWayElytra.getRadiusManager()
-                        .isInAnyArea(player.getLocation());
+        boolean inRadiusArea = oneWayElytra.getRadiusManager().isInAnyArea(player.getLocation());
+
         return wgAllowed || inRadiusArea;
     }
-
 
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event){
