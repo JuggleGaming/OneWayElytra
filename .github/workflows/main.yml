@@ -1,8 +1,9 @@
 name: Build & Release
+
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -35,13 +36,17 @@ jobs:
             ! -name "*javadoc.jar" \
             | head -n 1)
 
-          cp "$ORIGINAL_JAR" "release/OneWayElytra-${GITHUB_REF_NAME}.jar"
+          VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
+
+          cp "$ORIGINAL_JAR" "release/OneWayElytra-${VERSION}.jar"
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: OneWayElytra
-          path: release/OneWayElytra-${{ github.ref_name }}.jar
+          path: release/OneWayElytra-${{ env.VERSION }}.jar
 
   release:
     name: Create GitHub Release
@@ -59,7 +64,6 @@ jobs:
           path: release
 
       - name: Read changelog
-        id: changelog
         run: |
           if [ -f changelog.md ]; then
             {
@@ -75,15 +79,39 @@ jobs:
             } >> $GITHUB_ENV
           fi
 
+      - name: Read version from pom.xml
+        run: |
+          VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Delete existing release if present
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete "${VERSION}" --yes
+
+      - name: Delete existing tag if present
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push --delete origin "${VERSION}"
+
+      - name: Create tag
+        run: |
+          git tag "${VERSION}"
+          git push origin "${VERSION}"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
+          name: Release ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
           body: |
-            Automated release notes for version ${{ github.ref_name }}
+            Automated release notes for version ${{ env.VERSION }}
 
             ## Changelog
             ${{ env.CHANGELOG }}
           files: |
-            release/OneWayElytra-${{ github.ref_name }}.jar
+            release/OneWayElytra-${{ env.VERSION }}.jar
