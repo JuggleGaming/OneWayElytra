@@ -30,16 +30,14 @@ jobs:
       - name: Prepare release JAR
         run: |
           mkdir -p release
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          SHADED_JAR=$(find target -maxdepth 1 -type f -name "*.jar" \
-          ! -name "original-*" \
-          ! -name "*sources.jar" \
-          ! -name "*javadoc.jar" \
-          | head -n 1)
-          
-          cp "$SHADED_JAR" "release/OneWayElytra-${VERSION}.jar"
+          ORIGINAL_JAR=$(find target -maxdepth 1 -type f -name "*.jar" \
+            ! -name "*sources.jar" \
+            ! -name "*javadoc.jar" \
+            | head -n 1)
+          VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
+          cp "$ORIGINAL_JAR" "release/OneWayElytra-${VERSION}.jar"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -65,13 +63,13 @@ jobs:
         run: |
           if [ -f changelog.md ]; then
             {
-              echo "CHANGELOG<<EOF"
+              echo "CHANGELOG<<'EOF'"
               cat changelog.md
               echo "EOF"
             } >> $GITHUB_ENV
           else
             {
-              echo "CHANGELOG<<EOF"
+              echo "CHANGELOG<<'EOF'"
               echo "No changelog available."
               echo "EOF"
             } >> $GITHUB_ENV
