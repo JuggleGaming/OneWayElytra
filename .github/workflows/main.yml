@@ -30,15 +30,16 @@ jobs:
       - name: Prepare release JAR
         run: |
           mkdir -p release
-          ORIGINAL_JAR=$(find target -maxdepth 1 -type f -name "*.jar" \
-            ! -name "*sources.jar" \
-            ! -name "*javadoc.jar" \
-            | head -n 1)
-          VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
-          cp "$ORIGINAL_JAR" "release/OneWayElytra-${VERSION}.jar"
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          SHADED_JAR=$(find target -maxdepth 1 -type f -name "*.jar" \
+          ! -name "original-*" \
+          ! -name "*sources.jar" \
+          ! -name "*javadoc.jar" \
+          | head -n 1)
+          
+          cp "$SHADED_JAR" "release/OneWayElytra-${VERSION}.jar"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      # Wichtig: Wir laden den gesamten release-Ordner hoch, um die Struktur zu behalten
+          
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -76,13 +77,11 @@ jobs:
             } >> $GITHUB_ENV
           fi
 
-      # Version auslesen und für GitHub Actions Syntax verfügbar machen
       - name: Read version from pom.xml
         run: |
           VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      # Bereinigung via GitHub CLI (löscht Release UND das Tag auf GitHub sauber)
       - name: Delete existing release and tag if present
         continue-on-error: true
         env:
@@ -90,7 +89,6 @@ jobs:
         run: |
           gh release delete "${{ env.VERSION }}" --yes --cleanup-tag
 
-      # Das Erstellen des Tags übernimmt softprops/action-gh-release automatisch!
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
