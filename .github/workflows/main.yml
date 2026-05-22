@@ -3,7 +3,7 @@ name: Build & Release
 on:
   push:
     branches:
-      - main
+      - master
 
 permissions:
   contents: write
@@ -96,7 +96,7 @@ jobs:
         with:
           name: Release ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
-          target_commitish: main
+          target_commitish: master
           body: |
             Automated release notes for version ${{ env.VERSION }}
 
