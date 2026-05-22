@@ -62,17 +62,11 @@ jobs:
       - name: Read changelog
         run: |
           if [ -f changelog.md ]; then
-            {
-              echo "CHANGELOG<<EOF"
-              cat changelog.md
-              echo "EOF"
-            } >> $GITHUB_ENV
+            echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+            cat changelog.md >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
           else
-            {
-              echo "CHANGELOG<<EOF"
-              echo "No changelog available."
-              echo "EOF"
-            } >> $GITHUB_ENV
+            echo "CHANGELOG=No changelog available." >> $GITHUB_ENV
           fi
 
       - name: Read version from pom.xml
