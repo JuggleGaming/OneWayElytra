@@ -6,6 +6,7 @@ import de.jugglegaming.oneWayElytra.managers.FileManager;
 import de.jugglegaming.oneWayElytra.managers.RadiusManager;
 import de.jugglegaming.oneWayElytra.utils.Tools;
 import de.jugglegaming.oneWayElytra.utils.WorldguardFlags;
+import de.jugglegaming.oneWayElytra.utils.WorldguardHook;
 import de.jugglegaming.oneWayElytra.utils.WorldguardUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -29,6 +30,9 @@ public final class OneWayElytra extends JavaPlugin {
     private OneWayElytraListener oneWayElytraListener;
 
     private WorldguardFlags wgFlag;
+    private WorldguardHook worldguardHook;
+
+    private boolean isWorldguardInstalled;
 
     @Override
     public void onLoad() {
@@ -51,7 +55,12 @@ public final class OneWayElytra extends JavaPlugin {
         ccs.sendMessage(prefix + "Listeners successfully registered!");
         registerCommands();
         ccs.sendMessage(prefix + "Commands successfully registered!");
-
+        isWorldguardInstalled = WorldguardUtils.isWorldGuardInstalled();
+        if(isWorldguardInstalled) {
+            ccs.sendMessage(prefix + "WorldGuard: connected");
+        } else {
+            ccs.sendMessage(prefix + "WorldGuard: not found");
+        }
         ccs.sendMessage(prefix + "*~*~*~*~*~*~*~* <<OneWayElytra>> *~*~*~*~*~*~*~*");
         ccs.sendMessage(prefix + "Plugin successfully loaded!");
         ccs.sendMessage(prefix + "Version: " + getDescription().getVersion());
@@ -79,7 +88,7 @@ public final class OneWayElytra extends JavaPlugin {
 
     @EventHandler
     public void registerListener() {
-        oneWayElytraListener = new OneWayElytraListener(this);
+        oneWayElytraListener = new OneWayElytraListener(this, worldguardHook);
         pluginManager.registerEvents(oneWayElytraListener, this);
     }
 
@@ -93,6 +102,7 @@ public final class OneWayElytra extends JavaPlugin {
         Plugin worldGuard = pluginManager.getPlugin("WorldGuard");
         if(WorldguardUtils.isWorldGuardInstalled()){
             WorldguardFlags.load();
+            worldguardHook = new WorldguardHook();
             ccs.sendMessage("[OneWayElytra] Successfully connected to WorldGuard!");
         } else {
             ccs.sendMessage("[OneWayElytra] Worldguard not found.");
