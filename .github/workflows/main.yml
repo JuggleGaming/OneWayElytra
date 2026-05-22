@@ -76,7 +76,7 @@ jobs:
           name: Release ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
           target_commitish: master
-          body_path: changelog.md
+          body_path: CHANGELOG.md
           files: |
             release/*.jar
         env:
