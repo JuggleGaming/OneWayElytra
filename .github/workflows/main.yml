@@ -59,16 +59,6 @@ jobs:
           name: OneWayElytra-Artifact
           path: release
 
-      - name: Read changelog
-        run: |
-          if [ -f changelog.md ]; then
-            echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-            cat changelog.md >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
-          else
-            echo "CHANGELOG=No changelog available." >> $GITHUB_ENV
-          fi
-
       - name: Read version from pom.xml
         run: |
           VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
@@ -87,11 +77,7 @@ jobs:
           name: Release ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
           target_commitish: master
-          body: |
-            Automated release notes for version ${{ env.VERSION }}
-
-            ## Changelog
-            ${{ env.CHANGELOG }}
+          body_path: changelog.md
           files: |
             release/*.jar
         env:
