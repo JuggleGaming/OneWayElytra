@@ -1,4 +1,5 @@
-## Version: 1.1.2
+### New features
+- list to disable certain blocks (such as snow and grass) as a cancel-flight-block
 
 - Added changelog-system
 - Fixed an error occurring when worldguard is not installed
