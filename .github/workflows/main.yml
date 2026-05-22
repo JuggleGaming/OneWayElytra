@@ -30,10 +30,9 @@ jobs:
       - name: Prepare release JAR
         run: |
           mkdir -p release
-          ORIGINAL_JAR=$(find target -maxdepth 1 -type f -name "*.jar" \
-            ! -name "*sources.jar" \
-            ! -name "*javadoc.jar" \
-            | head -n 1)
+          
+          ORIGINAL_JAR=$(find target -maxdepth 1 -type f -name "*.jar" ! -name "original-*.jar" | head -n 1)
+
           VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
           cp "$ORIGINAL_JAR" "release/OneWayElytra-${VERSION}.jar"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
