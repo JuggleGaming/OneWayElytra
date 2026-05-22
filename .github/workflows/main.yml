@@ -65,13 +65,13 @@ jobs:
             {
               echo "CHANGELOG<<EOF"
               cat changelog.md
-              echo EOF
+              echo "EOF"
             } >> $GITHUB_ENV
           else
             {
               echo "CHANGELOG<<EOF"
               echo "No changelog available."
-              echo EOF
+              echo "EOF"
             } >> $GITHUB_ENV
           fi
 
