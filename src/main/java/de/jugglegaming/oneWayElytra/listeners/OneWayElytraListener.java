@@ -61,7 +61,10 @@ public class OneWayElytraListener implements Listener {
                     }
                 }
 
-                if (!(wgAllowed || inRadiusArea) && !playersFlying.contains(player)) {
+                if (!(wgAllowed || inRadiusArea)
+                        && !playersFlying.contains(player)
+                        && (player.getGameMode() == GameMode.SURVIVAL
+                        || player.getGameMode() == GameMode.ADVENTURE)) {
                     player.setAllowFlight(false);
                 }
 
