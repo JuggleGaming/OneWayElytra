@@ -30,23 +30,20 @@ jobs:
       - name: Prepare release JAR
         run: |
           mkdir -p release
-
           ORIGINAL_JAR=$(find target -maxdepth 1 -type f -name "*.jar" \
             ! -name "*sources.jar" \
             ! -name "*javadoc.jar" \
             | head -n 1)
-
           VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
-
           cp "$ORIGINAL_JAR" "release/OneWayElytra-${VERSION}.jar"
-
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
+      # Wichtig: Wir laden den gesamten release-Ordner hoch, um die Struktur zu behalten
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: OneWayElytra
-          path: release/OneWayElytra-${{ env.VERSION }}.jar
+          name: OneWayElytra-Artifact
+          path: release/
 
   release:
     name: Create GitHub Release
@@ -60,7 +57,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: OneWayElytra
+          name: OneWayElytra-Artifact
           path: release
 
       - name: Read changelog
@@ -79,39 +76,33 @@ jobs:
             } >> $GITHUB_ENV
           fi
 
+      # Version auslesen und für GitHub Actions Syntax verfügbar machen
       - name: Read version from pom.xml
         run: |
           VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Delete existing release if present
+      # Bereinigung via GitHub CLI (löscht Release UND das Tag auf GitHub sauber)
+      - name: Delete existing release and tag if present
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete "${VERSION}" --yes
+          gh release delete "${{ env.VERSION }}" --yes --cleanup-tag
 
-      - name: Delete existing tag if present
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git push --delete origin "${VERSION}"
-
-      - name: Create tag
-        run: |
-          git tag "${VERSION}"
-          git push origin "${VERSION}"
-
+      # Das Erstellen des Tags übernimmt softprops/action-gh-release automatisch!
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
+          target_commitish: main
           body: |
             Automated release notes for version ${{ env.VERSION }}
 
             ## Changelog
             ${{ env.CHANGELOG }}
           files: |
-            release/OneWayElytra-${{ env.VERSION }}.jar
+            release/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
