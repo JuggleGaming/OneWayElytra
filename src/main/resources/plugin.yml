@@ -1,5 +1,5 @@
 name: OneWayElytra
-version: '1.2.0'
+version: '1.1.2'
 main: de.jugglegaming.oneWayElytra.OneWayElytra
 author: JuggleGaming
 api-version: '26.1.2'
