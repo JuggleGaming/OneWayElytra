@@ -73,8 +73,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ env.VERSION }}
-          tag_name: ${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
+          tag_name: v${{ env.VERSION }}
           target_commitish: master
           body_path: CHANGELOG.md
           files: |
