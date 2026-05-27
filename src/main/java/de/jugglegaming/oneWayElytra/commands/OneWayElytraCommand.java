@@ -6,14 +6,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginDescriptionFile;
 
-public class OneWayElytraCMD implements CommandExecutor {
+public class OneWayElytraCommand implements CommandExecutor {
 
     private OneWayElytra oneWayElytra;
     private OneWayElytraListener oneWayElytraListener;
 
-    public OneWayElytraCMD(OneWayElytra oneWayElytra, OneWayElytraListener oneWayElytraListener) {
+    public OneWayElytraCommand(OneWayElytra oneWayElytra, OneWayElytraListener oneWayElytraListener) {
         this.oneWayElytra = oneWayElytra;
         this.oneWayElytraListener = oneWayElytraListener;
     }
