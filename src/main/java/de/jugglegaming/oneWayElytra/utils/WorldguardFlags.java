@@ -18,24 +18,40 @@ public class WorldguardFlags extends FlagValueChangeHandler {
         super(session, flag);
     }
 
-    public static StateFlag ONEWAYELYTRA ;
+    public static StateFlag OWE_START ;
+    public static StateFlag OWE_ENTRY ;
+    public static StateFlag OWE_ITEM ;
 
     public static void load(){
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
         try {
-            // create a flag with the name "my-custom-flag", defaulting to true
-            StateFlag flag = new StateFlag("onewayelytra", false);
-            registry.register(flag);
-            ONEWAYELYTRA = flag; // only set our field if there was no error
+            StateFlag startFlag = new StateFlag("owe-start", false);
+            registry.register(startFlag);
+            OWE_START = startFlag;
         } catch (FlagConflictException e) {
-            // some other plugin registered a flag by the same name already.
-            // you can use the existing flag, but this may cause conflicts - be sure to check type
-            Flag<?> existing = registry.get("my-custom-flag");
+            Flag<?> existing = registry.get("owe-start");
             if (existing instanceof StateFlag) {
-                ONEWAYELYTRA = (StateFlag) existing;
-            } else {
-                // types don't match - this is bad news! some other plugin conflicts with you
-                // hopefully this never actually happens
+                OWE_START = (StateFlag) existing;
+            }
+        }
+        try {
+            StateFlag entryFlag = new StateFlag("owe-entry", true);
+            registry.register(entryFlag);
+            OWE_ENTRY = entryFlag;
+        } catch (FlagConflictException e) {
+            Flag<?> existing = registry.get("owe-entry");
+            if (existing instanceof StateFlag) {
+                OWE_ENTRY = (StateFlag) existing;
+            }
+        }
+        try {
+            StateFlag itemFlag = new StateFlag("owe-item", true);
+            registry.register(itemFlag);
+            OWE_ITEM = itemFlag;
+        } catch (FlagConflictException e) {
+            Flag<?> existing = registry.get("owe-item");
+            if (existing instanceof StateFlag) {
+                OWE_ITEM = (StateFlag) existing;
             }
         }
     }

@@ -12,27 +12,35 @@ import org.bukkit.entity.Player;
 public class WorldguardHook {
 
     public boolean canFly(Player player) {
-
-        com.sk89q.worldedit.util.Location loc =
-                BukkitAdapter.adapt(player.getLocation());
-
-        RegionContainer container =
-                WorldGuard.getInstance()
-                        .getPlatform()
-                        .getRegionContainer();
-
+        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
         RegionQuery query = container.createQuery();
+        ApplicableRegionSet set = query.getApplicableRegions(loc);
+        LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
 
-        ApplicableRegionSet set =
-                query.getApplicableRegions(loc);
-
-        LocalPlayer localPlayer =
-                WorldGuardPlugin.inst().wrapPlayer(player);
-
-        return set.testState(
-                localPlayer,
-                WorldguardFlags.ONEWAYELYTRA
-        );
+        return set.testState(localPlayer, WorldguardFlags.OWE_START);
     }
+
+    public boolean canEnter(Player player) {
+        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        RegionQuery query = container.createQuery();
+        ApplicableRegionSet set = query.getApplicableRegions(loc);
+        LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
+
+        return set.testState(localPlayer, WorldguardFlags.OWE_ENTRY);
+    }
+
+    public boolean canUseOweItem(Player player) {
+        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        RegionQuery query = container.createQuery();
+        ApplicableRegionSet set = query.getApplicableRegions(loc);
+        LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
+
+        return set.testState(localPlayer, WorldguardFlags.OWE_ITEM);
+    }
+
+
 
 }
