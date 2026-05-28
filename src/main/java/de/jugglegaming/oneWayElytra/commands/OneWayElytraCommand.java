@@ -2,10 +2,15 @@ package de.jugglegaming.oneWayElytra.commands;
 
 import de.jugglegaming.oneWayElytra.OneWayElytra;
 import de.jugglegaming.oneWayElytra.listeners.OneWayElytraListener;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 public class OneWayElytraCommand implements CommandExecutor {
 
@@ -109,9 +114,36 @@ public class OneWayElytraCommand implements CommandExecutor {
                         } else {
                             player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
                         }
-                    } else {
-                        player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
-                    }
+                    } else if (args[0].equalsIgnoreCase("tag")){
+                        if (args[1].equalsIgnoreCase("add")){
+                            if(player.getInventory().getChestplate() != null){
+                                ItemStack itemStack = player.getInventory().getChestplate();
+                                ItemMeta meta = itemStack.getItemMeta();
+                                PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                                NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                                dataContainer.set(key, PersistentDataType.STRING, "true");
+                                itemStack.setItemMeta(meta);
+                                player.sendMessage("Successfully added tag");
+                            }
+                        } else if (args[1].equalsIgnoreCase("remove")){
+                            ItemStack itemStack = player.getInventory().getChestplate();
+                            ItemMeta meta = itemStack.getItemMeta();
+                            PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                            NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                            dataContainer.remove(key);
+                            itemStack.setItemMeta(meta);
+                            player.sendMessage("Successfully removed tag");
+                        } else if(args[1].equalsIgnoreCase("info")){
+                            if(player.getInventory().getChestplate() != null){
+                                ItemStack itemStack = player.getInventory().getChestplate();
+                                ItemMeta meta = itemStack.getItemMeta();
+                                PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                                player.sendMessage(dataContainer.toString());
+                            }
+                        }
+                        } else {
+                            player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
+                        }
                 }
                 if (args.length == 1){
                     player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));

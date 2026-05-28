@@ -13,6 +13,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +62,19 @@ public class OneWayElytraListener implements Listener {
                             .getBoolean("adventure"))) {
 
                         player.setAllowFlight(true);
+                    }
+                }
+                if(player.getInventory().getChestplate() != null) {
+                    player.sendMessage("HAS CHESTPLATE");
+                    ItemStack itemStack = player.getInventory().getChestplate();
+                    ItemMeta meta = itemStack.getItemMeta();
+                    PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                    NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                    if (dataContainer.has(key, PersistentDataType.STRING)) {
+                        player.sendMessage("JO");
+                        player.
+                    } else {
+                        player.sendMessage("NOPE");
                     }
                 }
 
@@ -109,6 +126,34 @@ public class OneWayElytraListener implements Listener {
                 Bukkit.getScheduler().runTaskLater(oneWayElytra, () -> {
                     player.setAllowFlight(false);
                 }, 1L);
+            }
+        }
+
+
+    }
+
+    @EventHandler
+    public void onElytraItem(PlayerToggleFlightEvent event){
+        Player player = event.getPlayer();
+        //TODO: SURVIVAL AND ADVENTURE MODE ONLY
+        if(player.getGameMode().equals(GameMode.CREATIVE)) {
+            player.sendMessage("CREATIVE MODE");
+        } else {
+            event.setCancelled(true);
+            player.sendMessage("CANCELLED");
+            if(player.getInventory().getChestplate() != null){
+                player.sendMessage("HAS CHESTPLATE");
+                ItemStack itemStack = player.getInventory().getChestplate();
+                ItemMeta meta = itemStack.getItemMeta();
+                PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                if (dataContainer.has(key, PersistentDataType.STRING)) {
+                    player.sendMessage("JO");
+                } else {
+                    player.sendMessage("NOPE");
+                }
+            } else {
+                player.sendMessage("NO CHESTPLATE");
             }
         }
 

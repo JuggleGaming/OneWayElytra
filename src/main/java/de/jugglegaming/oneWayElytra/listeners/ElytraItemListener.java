@@ -17,31 +17,9 @@ public class ElytraItemListener implements Listener {
     private OneWayElytra oneWayElytra;
     public ElytraItemListener(OneWayElytra oneWayElytra) {
         this.oneWayElytra = oneWayElytra;
-    }
-
-    @EventHandler
-    public void onToggleFlight(PlayerToggleFlightEvent event){
-        Player player = event.getPlayer();
-        //TODO: SURVIVAL AND ADVENTURE MODE ONLY
-        if(player.getGameMode().equals(GameMode.SURVIVAL) || player.getGameMode().equals(GameMode.ADVENTURE)){
-            if(player.getInventory().getChestplate() != null){
-                ItemStack itemStack = player.getInventory().getChestplate();
-                ItemMeta meta = itemStack.getItemMeta();
-                PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
-                NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
-                if (dataContainer.has(key, PersistentDataType.STRING)) {
-                    player.sendMessage("JO");
-                } else {
-                    player.sendMessage("NOPE");
-                }
-            } else {
-                player.sendMessage("NO CHESTPLATE");
-            }
-        } else {
-            player.sendMessage("WRONG GAMEMODE");
-        }
-
 
     }
+
+
 
 }
