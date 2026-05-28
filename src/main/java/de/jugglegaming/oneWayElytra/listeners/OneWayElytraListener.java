@@ -19,9 +19,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class OneWayElytraListener implements Listener {
 
@@ -39,14 +39,18 @@ public class OneWayElytraListener implements Listener {
         this.oneWayElytra = oneWayElytra;
         this.worldguardHook = worldguardHook;
         this.radius = oneWayElytra.getFileManager().getConfig().getInt("radius");
+
         Bukkit.getScheduler().runTaskTimer(oneWayElytra, () -> {
+
+            // Lokaler final Key für den Scheduler-Task
+            final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
 
             for (Player player : Bukkit.getOnlinePlayers()) {
 
-                boolean wgAllowed = false;
+                boolean wgStartAllowed = false;
 
                 if (worldguardHook != null) {
-                    wgAllowed = worldguardHook.canFly(player);
+                    wgStartAllowed = worldguardHook.canStart(player);
                 }
 
                 boolean inRadiusArea =
@@ -57,10 +61,13 @@ public class OneWayElytraListener implements Listener {
                 ItemStack chestplate = player.getInventory().getChestplate();
                 if (chestplate != null && chestplate.hasItemMeta()) {
                     PersistentDataContainer container = chestplate.getItemMeta().getPersistentDataContainer();
-                    NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
                     if (container.has(key, PersistentDataType.BYTE)) {
                         hasTaggedElytra = true;
                     }
+                }
+
+                if (hasTaggedElytra && worldguardHook != null && !worldguardHook.isItemAllowed(player)) {
+                    hasTaggedElytra = false;
                 }
 
                 if (isAllowedToFly(player)
@@ -77,7 +84,7 @@ public class OneWayElytraListener implements Listener {
                     }
                 }
 
-                if (!(wgAllowed || inRadiusArea || hasTaggedElytra)
+                if (!(wgStartAllowed || inRadiusArea || hasTaggedElytra)
                         && !playersFlying.contains(player)
                         && (player.getGameMode() == GameMode.SURVIVAL
                         || player.getGameMode() == GameMode.ADVENTURE)) {
@@ -105,12 +112,11 @@ public class OneWayElytraListener implements Listener {
                                     ItemStack landingChest = player.getInventory().getChestplate();
                                     if (landingChest != null && landingChest.hasItemMeta()) {
                                         PersistentDataContainer container = landingChest.getItemMeta().getPersistentDataContainer();
-                                        NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
                                         if (container.has(key, PersistentDataType.BYTE)) {
                                             player.getInventory().setChestplate(null);
                                         }
                                     }
-                                },5
+                                }, 5
                         );
                     }
                 }
@@ -136,7 +142,6 @@ public class OneWayElytraListener implements Listener {
         }
     }
 
-    // TODO: REMOVE BEFORE RELEASE
     @EventHandler
     public void onElytraItem(PlayerToggleFlightEvent event){
         Player player = event.getPlayer();
@@ -150,7 +155,7 @@ public class OneWayElytraListener implements Listener {
                 ItemStack itemStack = player.getInventory().getChestplate();
                 ItemMeta meta = itemStack.getItemMeta();
                 PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
-                NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
                 if (dataContainer.has(key, PersistentDataType.BYTE)) {
                     player.sendMessage("JO");
                 } else {
@@ -163,9 +168,9 @@ public class OneWayElytraListener implements Listener {
     }
 
     public boolean isAllowedToFly(Player player) {
-        boolean wgAllowed = false;
+        boolean wgStartAllowed = false;
         if (worldguardHook != null) {
-            wgAllowed = worldguardHook.canFly(player);
+            wgStartAllowed = worldguardHook.canStart(player);
         }
         boolean inRadiusArea = oneWayElytra.getRadiusManager().isInAnyArea(player.getLocation());
         boolean hasTaggedElytra = false;
@@ -174,14 +179,18 @@ public class OneWayElytraListener implements Listener {
 
         if (chestplate != null && chestplate.hasItemMeta()) {
             PersistentDataContainer container = chestplate.getItemMeta().getPersistentDataContainer();
-            NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+            final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
             if (container.has(key, PersistentDataType.BYTE)) {
                 hasTaggedElytra = true;
             }
         }
 
+        if (hasTaggedElytra && worldguardHook != null && !worldguardHook.isItemAllowed(player)) {
+            hasTaggedElytra = false;
+        }
+
         if (hasTaggedElytra) return true;
-        return wgAllowed || inRadiusArea;
+        return wgStartAllowed || inRadiusArea;
     }
 
 
@@ -233,7 +242,6 @@ public class OneWayElytraListener implements Listener {
         }
     }
 
-    //Deny interaction with chestplate if player is flying
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
@@ -241,7 +249,7 @@ public class OneWayElytraListener implements Listener {
         if(playersFlying.contains(player)){
             if (chestplate != null && chestplate.hasItemMeta()) {
                 PersistentDataContainer container = chestplate.getItemMeta().getPersistentDataContainer();
-                NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
                 if (container.has(key, PersistentDataType.BYTE)) {
                     event.setCancelled(true);
                 }
@@ -249,17 +257,16 @@ public class OneWayElytraListener implements Listener {
         }
     }
 
-    //Deny interaction with onewayelytra if player is flying
     @EventHandler
     public void onItemClick(InventoryClickEvent event){
         if (!(event.getWhoClicked() instanceof Player)) return;
         Player player = (Player) event.getWhoClicked();
         if(playersFlying.contains(player)){
+            final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
             if (event.getSlotType() == InventoryType.SlotType.ARMOR) {
                 ItemStack current = event.getCurrentItem();
                 if (current != null && current.hasItemMeta()) {
                     PersistentDataContainer container = current.getItemMeta().getPersistentDataContainer();
-                    NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
                     if (container.has(key, PersistentDataType.BYTE)) {
                         event.setCancelled(true);
                     }
@@ -269,7 +276,6 @@ public class OneWayElytraListener implements Listener {
                 ItemStack current = event.getCurrentItem();
                 if (current != null && current.hasItemMeta()) {
                     PersistentDataContainer container = current.getItemMeta().getPersistentDataContainer();
-                    NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
                     if (container.has(key, PersistentDataType.BYTE)) {
                         event.setCancelled(true);
                     }

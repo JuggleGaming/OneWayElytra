@@ -7,11 +7,12 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class WorldguardHook {
 
-    public boolean canFly(Player player) {
+    public boolean canStart(Player player) {
         com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
         RegionQuery query = container.createQuery();
@@ -21,7 +22,7 @@ public class WorldguardHook {
         return set.testState(localPlayer, WorldguardFlags.OWE_START);
     }
 
-    public boolean canEnter(Player player) {
+    public boolean isEntryAllowed(Player player, Location location) {
         com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
         RegionQuery query = container.createQuery();
@@ -31,7 +32,7 @@ public class WorldguardHook {
         return set.testState(localPlayer, WorldguardFlags.OWE_ENTRY);
     }
 
-    public boolean canUseOweItem(Player player) {
+    public boolean isItemAllowed(Player player) {
         com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
         RegionQuery query = container.createQuery();
