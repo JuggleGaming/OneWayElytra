@@ -28,6 +28,7 @@ public class OneWayElytraListener implements Listener {
     private int radius;
     private int boostMultiplier;
     private List<Player> playersFlying = new ArrayList<>();
+    private List<Player> playersFalling = new ArrayList<>();
     private List<Player> playersBoosted = new ArrayList<>();
 
     private List<Location> positions = new ArrayList<>();
@@ -42,7 +43,6 @@ public class OneWayElytraListener implements Listener {
 
         Bukkit.getScheduler().runTaskTimer(oneWayElytra, () -> {
 
-            // Lokaler final Key für den Scheduler-Task
             final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
 
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -100,13 +100,10 @@ public class OneWayElytraListener implements Listener {
                             .getRelative(BlockFace.DOWN)
                             .getType()
                             .isAir()) {
-
                         player.setGliding(false);
                         playersBoosted.remove(player);
 
-                        Bukkit.getScheduler().runTaskLater(
-                                oneWayElytra,
-                                () -> {
+                        Bukkit.getScheduler().runTaskLater(oneWayElytra, () -> {
                                     playersFlying.remove(player);
                                     player.setAllowFlight(false);
                                     ItemStack landingChest = player.getInventory().getChestplate();
@@ -123,6 +120,41 @@ public class OneWayElytraListener implements Listener {
             }
 
         }, 0, 3);
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        Location from = event.getFrom();
+        Location to = event.getTo();
+
+        if (to == null || (from.getBlockX() == to.getBlockX() && from.getBlockY() == to.getBlockY() && from.getBlockZ() == to.getBlockZ())) return;
+
+        if (playersFlying.contains(player)
+                && worldguardHook != null
+                && !worldguardHook.isEntryAllowed(player, to)) {
+
+            // 👉 HIER ist der richtige Ort
+            playersFlying.remove(player);
+            playersFalling.add(player);
+
+            player.setGliding(false);
+            player.setFlying(false);
+            player.setAllowFlight(false);
+
+            player.setFallDistance(0f);
+            player.setVelocity(new Vector(0, 0, 0));
+            player.setFireTicks(0);
+
+            event.setTo(from);
+
+            // optional: Schutzfenster starten (wichtig!)
+            Bukkit.getScheduler().runTaskLater(oneWayElytra, () -> {
+                playersFalling.remove(player);
+            }, 20L);
+            //TODO: MESSAGE STRING
+            ActionBar.send(player, "§cDu darfst hier nicht hineinfliegen!");
+        }
     }
 
     @EventHandler
@@ -198,11 +230,11 @@ public class OneWayElytraListener implements Listener {
     public void onEntityDamage(EntityDamageEvent event){
         if(event.getEntityType() == EntityType.PLAYER){
             Player player = (Player) event.getEntity();
-            if(playersFlying.contains(event.getEntity())){
-                if(event.getCause() == EntityDamageEvent.DamageCause.FALL){
+            if(playersFlying.contains(player) || playersFalling.contains(player)){
+                if(event.getCause().equals(EntityDamageEvent.DamageCause.FALL)
+                        || event.getCause().equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL)){
                     event.setCancelled(true);
-                } else if(event.getCause() == EntityDamageEvent.DamageCause.FLY_INTO_WALL){
-                    event.setCancelled(true);
+                    player.setFallDistance(0f);
                 }
             }
         }
