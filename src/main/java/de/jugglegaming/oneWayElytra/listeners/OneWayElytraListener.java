@@ -134,7 +134,6 @@ public class OneWayElytraListener implements Listener {
                 && worldguardHook != null
                 && !worldguardHook.isEntryAllowed(player, to)) {
 
-            // 👉 HIER ist der richtige Ort
             playersFlying.remove(player);
             playersFalling.add(player);
 
@@ -144,16 +143,24 @@ public class OneWayElytraListener implements Listener {
 
             player.setFallDistance(0f);
             player.setVelocity(new Vector(0, 0, 0));
-            player.setFireTicks(0);
 
             event.setTo(from);
+            //TODO: MESSAGE STRING
 
-            // optional: Schutzfenster starten (wichtig!)
+            ActionBar.send(player, "§cDu darfst hier nicht hineinfliegen!");
+        }
+        if (playersFalling.contains(player) && player.isOnGround()) {
+            ItemStack chestplate = player.getInventory().getChestplate();
+            if (chestplate != null && chestplate.hasItemMeta()) {
+                PersistentDataContainer container = chestplate.getItemMeta().getPersistentDataContainer();
+                final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                if (container.has(key, PersistentDataType.BYTE)) {
+                    player.getInventory().setChestplate(null);
+                }
+            }
             Bukkit.getScheduler().runTaskLater(oneWayElytra, () -> {
                 playersFalling.remove(player);
-            }, 20L);
-            //TODO: MESSAGE STRING
-            ActionBar.send(player, "§cDu darfst hier nicht hineinfliegen!");
+            }, 1L);
         }
     }
 
@@ -171,30 +178,14 @@ public class OneWayElytraListener implements Listener {
                     player.setAllowFlight(false);
                 }, 1L);
             }
-        }
-    }
-
-    @EventHandler
-    public void onElytraItem(PlayerToggleFlightEvent event){
-        Player player = event.getPlayer();
-        if(player.getGameMode().equals(GameMode.CREATIVE)) {
-            player.sendMessage("CREATIVE MODE");
-        } else {
-            event.setCancelled(true);
-            player.sendMessage("CANCELLED");
             if(player.getInventory().getChestplate() != null){
-                player.sendMessage("HAS CHESTPLATE");
                 ItemStack itemStack = player.getInventory().getChestplate();
                 ItemMeta meta = itemStack.getItemMeta();
                 PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
                 final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
                 if (dataContainer.has(key, PersistentDataType.BYTE)) {
-                    player.sendMessage("JO");
-                } else {
-                    player.sendMessage("NOPE");
+                    event.setCancelled(true);
                 }
-            } else {
-                player.sendMessage("NO CHESTPLATE");
             }
         }
     }
@@ -232,7 +223,8 @@ public class OneWayElytraListener implements Listener {
             Player player = (Player) event.getEntity();
             if(playersFlying.contains(player) || playersFalling.contains(player)){
                 if(event.getCause().equals(EntityDamageEvent.DamageCause.FALL)
-                        || event.getCause().equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL)){
+                        || event.getCause().equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL)
+                        || event.getCause().equals(EntityDamageEvent.DamageCause.CONTACT)){
                     event.setCancelled(true);
                     player.setFallDistance(0f);
                 }
