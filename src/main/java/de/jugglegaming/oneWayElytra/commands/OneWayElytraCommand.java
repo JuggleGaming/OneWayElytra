@@ -115,6 +115,7 @@ public class OneWayElytraCommand implements CommandExecutor {
                             player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
                         }
                     } else if (args[0].equalsIgnoreCase("tag")){
+                        //TODO: REMOVE COMMAND IF NEEDED AND FIND ANOTHER SOLUTION
                         if (args[1].equalsIgnoreCase("add")){
                             if(player.getInventory().getChestplate() != null){
                                 ItemStack itemStack = player.getInventory().getChestplate();

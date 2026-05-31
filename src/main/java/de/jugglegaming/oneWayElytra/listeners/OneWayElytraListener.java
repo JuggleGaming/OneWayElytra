@@ -146,7 +146,6 @@ public class OneWayElytraListener implements Listener {
 
             event.setTo(from);
             //TODO: MESSAGE STRING
-
             ActionBar.send(player, "§cDu darfst hier nicht hineinfliegen!");
         }
         if (playersFalling.contains(player) && player.isOnGround()) {
