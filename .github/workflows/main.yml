@@ -70,7 +70,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if gh release view "v${VERSION}" > /dev/null 2>&1; then
-            echo "::error::Release v${VERSION} existiert bereits! Workflow wird abgebrochen, um Überschreiben zu verhindern."
+            echo "::error::Release v${VERSION} already exists! Workflow cancelled. Please adjust the version."
             gh run cancel ${{ github.run_id }}
             sleep 10
             exit 1
