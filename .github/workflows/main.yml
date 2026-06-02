@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   build:
@@ -69,15 +70,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if gh release view "v${VERSION}" > /dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "Release v${VERSION} already exists."
+            echo "::error::Release v${VERSION} existiert bereits! Workflow wird abgebrochen, um Überschreiben zu verhindern."
+            gh run cancel ${{ github.run_id }}
+            sleep 10
+            exit 1
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "Release v${VERSION} does not exist yet."
+            echo "Release v${VERSION} existiert noch nicht. Fahre fort..."
           fi
 
       - name: Create GitHub Release
-        if: steps.check_release.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
           name: Release v${{ env.VERSION }}
