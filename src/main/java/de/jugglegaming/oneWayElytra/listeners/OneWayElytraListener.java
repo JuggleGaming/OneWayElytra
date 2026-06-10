@@ -145,8 +145,7 @@ public class OneWayElytraListener implements Listener {
             player.setVelocity(new Vector(0, 0, 0));
 
             event.setTo(from);
-            //TODO: MESSAGE STRING
-            ActionBar.send(player, "§cDu darfst hier nicht hineinfliegen!");
+            ActionBar.send(player, oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("areaEntryNotAllowed")));
         }
         if (playersFalling.contains(player) && player.isOnGround()) {
             ItemStack chestplate = player.getInventory().getChestplate();

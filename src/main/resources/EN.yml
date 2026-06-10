@@ -2,8 +2,8 @@
 ## OneWayElytra | EN.yml
 ##
 
-# Do not change anything unless you know what you are doing!
-config-version: 2
+# Do not change the config-version unless you know what you are doing!
+config-version: 3
 
 prefix: '&5OWE &f»'
 commandDenied: '&cYou are not allowed to execute this command!'
@@ -12,6 +12,7 @@ locationRemoved: '&7You &cdeleted &7the location &e%location% &7successfully&7.'
 locationNotFound: '&cThis location does not exist!'
 radiusSet: '&7You set the radius to &e%radius%&7 &7for location &e%location%&7.'
 wrongArgs: '&cYou tried to use wrong arguments. Please check &4/onewayelytra&c.'
+areaEntryNotAllowed: '&cYou are not allowed to enter this area while flying!'
 boostMessage: '&7Click into the air to get a boost!'
 world: 'World'
 radius: 'Radius'

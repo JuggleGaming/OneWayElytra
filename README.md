@@ -52,6 +52,4 @@ adventure: true
 
 locations: {}
 ```
-
-
 </details>
