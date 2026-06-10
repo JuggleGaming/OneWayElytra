@@ -1,5 +1,5 @@
 ### New features
-- Added the ability to use a custom tagged chestplate-item as a owe.
+- Added the ability to use a custom tagged chestplate-item as an owe.
 
 ### This is a beta version! Do not use in production!
 This beta features the first tests for the new owe-item. To be able to test the new Item just use `/owe tag add` to add the tag to an item, that is inside your chestplate slot. When the tag is added, you can fly into the air where ever you want. This item can be given to other players. Atm it isn't possible to set a tag for another player. This Command ist mostly for testing and might be removed at a later state. With `/owe tag remove` the tag can be removed again. This command applies to the executors chestplate-slot only.
