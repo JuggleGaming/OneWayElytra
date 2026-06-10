@@ -12,16 +12,23 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class OneWayElytraListener implements Listener {
 
     private int radius;
     private int boostMultiplier;
     private List<Player> playersFlying = new ArrayList<>();
+    private List<Player> playersFalling = new ArrayList<>();
     private List<Player> playersBoosted = new ArrayList<>();
 
     private List<Location> positions = new ArrayList<>();
@@ -33,21 +40,37 @@ public class OneWayElytraListener implements Listener {
         this.oneWayElytra = oneWayElytra;
         this.worldguardHook = worldguardHook;
         this.radius = oneWayElytra.getFileManager().getConfig().getInt("radius");
+
         Bukkit.getScheduler().runTaskTimer(oneWayElytra, () -> {
+
+            final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
 
             for (Player player : Bukkit.getOnlinePlayers()) {
 
-                boolean wgAllowed = false;
+                boolean wgStartAllowed = false;
 
                 if (worldguardHook != null) {
-                    wgAllowed = worldguardHook.canFly(player);
+                    wgStartAllowed = worldguardHook.canStart(player);
                 }
 
                 boolean inRadiusArea =
                         oneWayElytra.getRadiusManager()
                                 .isInAnyArea(player.getLocation());
 
-                if ((wgAllowed || inRadiusArea)
+                boolean hasTaggedElytra = false;
+                ItemStack chestplate = player.getInventory().getChestplate();
+                if (chestplate != null && chestplate.hasItemMeta()) {
+                    PersistentDataContainer container = chestplate.getItemMeta().getPersistentDataContainer();
+                    if (container.has(key, PersistentDataType.BYTE)) {
+                        hasTaggedElytra = true;
+                    }
+                }
+
+                if (hasTaggedElytra && worldguardHook != null && !worldguardHook.isItemAllowed(player)) {
+                    hasTaggedElytra = false;
+                }
+
+                if (isAllowedToFly(player)
                         && !playersFlying.contains(player)
                         && player.isOnGround()) {
 
@@ -61,7 +84,7 @@ public class OneWayElytraListener implements Listener {
                     }
                 }
 
-                if (!(wgAllowed || inRadiusArea)
+                if (!(wgStartAllowed || inRadiusArea || hasTaggedElytra)
                         && !playersFlying.contains(player)
                         && (player.getGameMode() == GameMode.SURVIVAL
                         || player.getGameMode() == GameMode.ADVENTURE)) {
@@ -77,23 +100,66 @@ public class OneWayElytraListener implements Listener {
                             .getRelative(BlockFace.DOWN)
                             .getType()
                             .isAir()) {
-
                         player.setGliding(false);
                         playersBoosted.remove(player);
 
-                        Bukkit.getScheduler().runTaskLater(
-                                oneWayElytra,
-                                () -> {
+                        Bukkit.getScheduler().runTaskLater(oneWayElytra, () -> {
                                     playersFlying.remove(player);
                                     player.setAllowFlight(false);
-                                },
-                                5
+                                    ItemStack landingChest = player.getInventory().getChestplate();
+                                    if (landingChest != null && landingChest.hasItemMeta()) {
+                                        PersistentDataContainer container = landingChest.getItemMeta().getPersistentDataContainer();
+                                        if (container.has(key, PersistentDataType.BYTE)) {
+                                            player.getInventory().setChestplate(null);
+                                        }
+                                    }
+                                }, 5
                         );
                     }
                 }
             }
 
         }, 0, 3);
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        Location from = event.getFrom();
+        Location to = event.getTo();
+
+        if (to == null || (from.getBlockX() == to.getBlockX() && from.getBlockY() == to.getBlockY() && from.getBlockZ() == to.getBlockZ())) return;
+
+        if (playersFlying.contains(player)
+                && worldguardHook != null
+                && !worldguardHook.isEntryAllowed(player, to)) {
+
+            playersFlying.remove(player);
+            playersFalling.add(player);
+
+            player.setGliding(false);
+            player.setFlying(false);
+            player.setAllowFlight(false);
+
+            player.setFallDistance(0f);
+            player.setVelocity(new Vector(0, 0, 0));
+
+            event.setTo(from);
+            ActionBar.send(player, oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("areaEntryNotAllowed")));
+        }
+        if (playersFalling.contains(player) && player.isOnGround()) {
+            ItemStack chestplate = player.getInventory().getChestplate();
+            if (chestplate != null && chestplate.hasItemMeta()) {
+                PersistentDataContainer container = chestplate.getItemMeta().getPersistentDataContainer();
+                final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                if (container.has(key, PersistentDataType.BYTE)) {
+                    player.getInventory().setChestplate(null);
+                }
+            }
+            Bukkit.getScheduler().runTaskLater(oneWayElytra, () -> {
+                playersFalling.remove(player);
+            }, 1L);
+        }
     }
 
     @EventHandler
@@ -110,21 +176,42 @@ public class OneWayElytraListener implements Listener {
                     player.setAllowFlight(false);
                 }, 1L);
             }
+            if(player.getInventory().getChestplate() != null){
+                ItemStack itemStack = player.getInventory().getChestplate();
+                ItemMeta meta = itemStack.getItemMeta();
+                PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                if (dataContainer.has(key, PersistentDataType.BYTE)) {
+                    event.setCancelled(true);
+                }
+            }
         }
-
-
     }
 
     public boolean isAllowedToFly(Player player) {
-        boolean wgAllowed = false;
+        boolean wgStartAllowed = false;
         if (worldguardHook != null) {
-            wgAllowed = worldguardHook.canFly(player);
+            wgStartAllowed = worldguardHook.canStart(player);
+        }
+        boolean inRadiusArea = oneWayElytra.getRadiusManager().isInAnyArea(player.getLocation());
+        boolean hasTaggedElytra = false;
+
+        ItemStack chestplate = player.getInventory().getChestplate();
+
+        if (chestplate != null && chestplate.hasItemMeta()) {
+            PersistentDataContainer container = chestplate.getItemMeta().getPersistentDataContainer();
+            final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+            if (container.has(key, PersistentDataType.BYTE)) {
+                hasTaggedElytra = true;
+            }
         }
 
-        boolean inRadiusArea =
-                oneWayElytra.getRadiusManager()
-                        .isInAnyArea(player.getLocation());
-        return wgAllowed || inRadiusArea;
+        if (hasTaggedElytra && worldguardHook != null && !worldguardHook.isItemAllowed(player)) {
+            hasTaggedElytra = false;
+        }
+
+        if (hasTaggedElytra) return true;
+        return wgStartAllowed || inRadiusArea;
     }
 
 
@@ -132,11 +219,12 @@ public class OneWayElytraListener implements Listener {
     public void onEntityDamage(EntityDamageEvent event){
         if(event.getEntityType() == EntityType.PLAYER){
             Player player = (Player) event.getEntity();
-            if(playersFlying.contains(event.getEntity())){
-                if(event.getCause() == EntityDamageEvent.DamageCause.FALL){
+            if(playersFlying.contains(player) || playersFalling.contains(player)){
+                if(event.getCause().equals(EntityDamageEvent.DamageCause.FALL)
+                        || event.getCause().equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL)
+                        || event.getCause().equals(EntityDamageEvent.DamageCause.CONTACT)){
                     event.setCancelled(true);
-                } else if(event.getCause() == EntityDamageEvent.DamageCause.FLY_INTO_WALL){
-                    event.setCancelled(true);
+                    player.setFallDistance(0f);
                 }
             }
         }
@@ -176,6 +264,45 @@ public class OneWayElytraListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        ItemStack chestplate = player.getInventory().getChestplate();
+        if(playersFlying.contains(player)){
+            if (chestplate != null && chestplate.hasItemMeta()) {
+                PersistentDataContainer container = chestplate.getItemMeta().getPersistentDataContainer();
+                final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                if (container.has(key, PersistentDataType.BYTE)) {
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
 
-
+    @EventHandler
+    public void onItemClick(InventoryClickEvent event){
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        Player player = (Player) event.getWhoClicked();
+        if(playersFlying.contains(player)){
+            final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+            if (event.getSlotType() == InventoryType.SlotType.ARMOR) {
+                ItemStack current = event.getCurrentItem();
+                if (current != null && current.hasItemMeta()) {
+                    PersistentDataContainer container = current.getItemMeta().getPersistentDataContainer();
+                    if (container.has(key, PersistentDataType.BYTE)) {
+                        event.setCancelled(true);
+                    }
+                }
+            }
+            if (event.isShiftClick()) {
+                ItemStack current = event.getCurrentItem();
+                if (current != null && current.hasItemMeta()) {
+                    PersistentDataContainer container = current.getItemMeta().getPersistentDataContainer();
+                    if (container.has(key, PersistentDataType.BYTE)) {
+                        event.setCancelled(true);
+                    }
+                }
+            }
+        }
+    }
 }

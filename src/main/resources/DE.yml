@@ -2,8 +2,8 @@
 ## OneWayElytra | DEyml
 ##
 
-# Do not change anything unless you know what you are doing!
-config-version: 2
+# Do not change the config-version unless you know what you are doing!
+config-version: 3
 
 prefix: '&5OWE &fÂ»'
 commandDenied: '&cDu darfst diesen Befehl nicht verwenden'
@@ -12,6 +12,7 @@ locationRemoved: '&7Du hast die &7die Position &e%location% &7erfolgreich &cgelÃ
 locationNotFound: '&cDiese Position gibt es nicht'
 radiusSet: '&7Du hast den Radius von &e%location% &7auf &e%radius% &7gesetzt.'
 wrongArgs: '&cDu hast falsche Argumente verwendet. Verwende &4/onewayelytra&c.'
+areaEntryNotAllowed: '&cDu darfst innerhalb dieses Bereichs nicht fliegen!'
 boostMessage: '&7Klicken, um einen Boost zu erhalten.'
 world: 'Welt'
 radius: 'Radius'

@@ -2,18 +2,22 @@ package de.jugglegaming.oneWayElytra.commands;
 
 import de.jugglegaming.oneWayElytra.OneWayElytra;
 import de.jugglegaming.oneWayElytra.listeners.OneWayElytraListener;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
-public class OneWayElytraCMD implements CommandExecutor {
+public class OneWayElytraCommand implements CommandExecutor {
 
     private OneWayElytra oneWayElytra;
     private OneWayElytraListener oneWayElytraListener;
 
-    public OneWayElytraCMD(OneWayElytra oneWayElytra, OneWayElytraListener oneWayElytraListener) {
+    public OneWayElytraCommand(OneWayElytra oneWayElytra, OneWayElytraListener oneWayElytraListener) {
         this.oneWayElytra = oneWayElytra;
         this.oneWayElytraListener = oneWayElytraListener;
     }
@@ -22,34 +26,34 @@ public class OneWayElytraCMD implements CommandExecutor {
             if(player.hasPermission("onewayelytra.command")){
                 if(args.length == 5) {
                     // /onewayelytra location <set> [name] <radius> [number]
-                   if(args[0].equalsIgnoreCase("location")){
-                       if(args[1].equalsIgnoreCase("set")){
-                           String locationName = args[2];
-                           if(oneWayElytra.getFileManager().getConfig().getSection("locations").contains(locationName)) {
-                               if (args[3].equalsIgnoreCase("radius")){
-                                   try {
-                                       int radius = Integer.parseInt(args[4]);
-                                       if(radius >= 0){
-                                           oneWayElytra.getFileManager().getConfig().set("locations." + locationName + ".radius", radius);
-                                           oneWayElytra.getFileManager().saveConfig();
-                                           player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("radiusSet"), Integer.valueOf(args[4]), locationName));
-                                           oneWayElytra.getRadiusManager().loadAreas(oneWayElytra.getFileManager().getConfig());
-                                       } else {
-                                           sender.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("valueMustBeHigherOrEqual")));
-                                       }
-                                   } catch(NumberFormatException e){
-                                       sender.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("valueMustBeInt")));
-                                   }
-                               }
-                           } else {
-                               player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("locationNotFound")));
-                           }
-                       } else {
-                           player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
-                       }
-                   } else {
-                       player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
-                   }
+                    if(args[0].equalsIgnoreCase("location")){
+                        if(args[1].equalsIgnoreCase("set")){
+                            String locationName = args[2];
+                            if(oneWayElytra.getFileManager().getConfig().getSection("locations").contains(locationName)) {
+                                if (args[3].equalsIgnoreCase("radius")){
+                                    try {
+                                        int radius = Integer.parseInt(args[4]);
+                                        if(radius >= 0){
+                                            oneWayElytra.getFileManager().getConfig().set("locations." + locationName + ".radius", radius);
+                                            oneWayElytra.getFileManager().saveConfig();
+                                            player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("radiusSet"), Integer.valueOf(args[4]), locationName));
+                                            oneWayElytra.getRadiusManager().loadAreas(oneWayElytra.getFileManager().getConfig());
+                                        } else {
+                                            sender.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("valueMustBeHigherOrEqual")));
+                                        }
+                                    } catch(NumberFormatException e){
+                                        sender.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("valueMustBeInt")));
+                                    }
+                                }
+                            } else {
+                                player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("locationNotFound")));
+                            }
+                        } else {
+                            player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
+                        }
+                    } else {
+                        player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
+                    }
                 }
                 if(args.length == 4) {
                     player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
@@ -109,6 +113,38 @@ public class OneWayElytraCMD implements CommandExecutor {
 
                         } else {
                             player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
+                        }
+                    } else if (args[0].equalsIgnoreCase("tag")){
+                        //TODO: REMOVE COMMAND IF NEEDED AND FIND ANOTHER SOLUTION
+                        if (args[1].equalsIgnoreCase("add")){
+                            if(player.getInventory().getChestplate() != null){
+                                ItemStack itemStack = player.getInventory().getChestplate();
+                                ItemMeta meta = itemStack.getItemMeta();
+                                PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                                NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                                dataContainer.set(key, PersistentDataType.BYTE, (byte) 1);
+                                itemStack.setItemMeta(meta);
+                                player.sendMessage("Successfully added tag");
+                            }
+                        } else if (args[1].equalsIgnoreCase("remove")){
+                            ItemStack itemStack = player.getInventory().getChestplate();
+                            if (itemStack == null || !itemStack.hasItemMeta()) {
+                                player.sendMessage(oneWayElytra.prefix + "No tagged chestplate equipped.");
+                                return false;
+                            }
+                            ItemMeta meta = itemStack.getItemMeta();
+                            PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                            NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                            dataContainer.remove(key);
+                            itemStack.setItemMeta(meta);
+                            player.sendMessage("Successfully removed tag");
+                        } else if(args[1].equalsIgnoreCase("info")){
+                            if(player.getInventory().getChestplate() != null){
+                                ItemStack itemStack = player.getInventory().getChestplate();
+                                ItemMeta meta = itemStack.getItemMeta();
+                                PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                                player.sendMessage(dataContainer.toString());
+                            }
                         }
                     } else {
                         player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
