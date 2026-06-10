@@ -23,7 +23,7 @@ public class WorldguardHook {
     }
 
     public boolean isEntryAllowed(Player player, Location location) {
-        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
+        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(location);
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
         RegionQuery query = container.createQuery();
         ApplicableRegionSet set = query.getApplicableRegions(loc);

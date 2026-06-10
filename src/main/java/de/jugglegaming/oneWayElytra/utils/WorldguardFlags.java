@@ -32,6 +32,8 @@ public class WorldguardFlags extends FlagValueChangeHandler {
             Flag<?> existing = registry.get("owe-start");
             if (existing instanceof StateFlag) {
                 OWE_START = (StateFlag) existing;
+            } else {
+                throw new IllegalStateException("WorldGuard flag 'owe-start' exists with incompatible type", e);
             }
         }
         try {
@@ -42,6 +44,8 @@ public class WorldguardFlags extends FlagValueChangeHandler {
             Flag<?> existing = registry.get("owe-entry");
             if (existing instanceof StateFlag) {
                 OWE_ENTRY = (StateFlag) existing;
+            } else {
+                throw new IllegalStateException("WorldGuard flag 'owe-entry' exists with incompatible type", e);
             }
         }
         try {
@@ -52,6 +56,8 @@ public class WorldguardFlags extends FlagValueChangeHandler {
             Flag<?> existing = registry.get("owe-item");
             if (existing instanceof StateFlag) {
                 OWE_ITEM = (StateFlag) existing;
+            } else {
+                throw new IllegalStateException("WorldGuard flag 'owe-item' exists with incompatible type", e);
             }
         }
     }

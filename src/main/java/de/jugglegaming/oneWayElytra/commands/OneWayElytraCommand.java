@@ -128,6 +128,10 @@ public class OneWayElytraCommand implements CommandExecutor {
                             }
                         } else if (args[1].equalsIgnoreCase("remove")){
                             ItemStack itemStack = player.getInventory().getChestplate();
+                            if (itemStack == null || !itemStack.hasItemMeta()) {
+                                player.sendMessage(oneWayElytra.prefix + "No tagged chestplate equipped.");
+                                return false;
+                            }
                             ItemMeta meta = itemStack.getItemMeta();
                             PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
                             NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
