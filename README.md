@@ -1,6 +1,6 @@
 
 # OneWayElytra
-Do you want to glied from your spawn into the unknown? Even without ever entering the end? This plugin adds a one-way-elytra for your spawn. Players are able to fly into the air and boost once they are in the air.
+Do you want to glide from your spawn into the unknown? Even without ever entering the end? This plugin adds a one-way-elytra for your spawn. Players are able to fly into the air and boost once they are in the air.
 
 <img src="/.github/pictures/example.gif" width="400">
 
