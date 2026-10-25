@@ -250,9 +250,35 @@ public class OneWayElytraListener implements Listener {
         }
     }
 
+    /*
     @EventHandler
     public void onEntityGlide(EntityToggleGlideEvent event){
         if (event.getEntityType() == EntityType.PLAYER && playersFlying.contains(event.getEntity())) event.setCancelled(true);
+    }
+     */
+    @EventHandler
+    public void onEntityGlide(EntityToggleGlideEvent event) {
+        if (!(event.getEntity() instanceof Player)) return;
+        Player player = (Player) event.getEntity();
+        if (event.isGliding()) {
+            ItemStack chestplate = player.getInventory().getChestplate();
+            if (chestplate != null && chestplate.hasItemMeta()) {
+                PersistentDataContainer container = chestplate.getItemMeta().getPersistentDataContainer();
+                final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                if (container.has(key, PersistentDataType.BYTE)) {
+                    if (worldguardHook != null && !worldguardHook.isItemAllowed(player)) {
+                        event.setCancelled(true);
+                        player.setGliding(false);
+                        player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("itemNotALlowed")));
+                        return;
+                    }
+                }
+            }
+        }
+
+        if (playersFlying.contains(player)) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler

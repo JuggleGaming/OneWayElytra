@@ -170,7 +170,9 @@ public class OneWayElytraCommand implements CommandExecutor {
                             dataContainer.set(key, PersistentDataType.BYTE, (byte) 1);
                             itemStack.setItemMeta(meta);
                             target.getInventory().setItem(target.getInventory().firstEmpty(), itemStack);
-                            player.sendMessage("Successfully added tag");
+                            player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(target, oneWayElytra.getFileManager().getMessages().getString("giveItemToPlayer")));
+                        } else {
+                            player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(target, oneWayElytra.getFileManager().getMessages().getString("inventoryFull")));
                         }
                     } else {
                         player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
