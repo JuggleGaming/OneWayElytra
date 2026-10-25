@@ -18,31 +18,89 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
+      - name: Read Java version from pom.xml
+        id: java-version
+        shell: bash
+        run: |
+          VERSION=$(mvn help:evaluate \
+            -Dexpression=maven.compiler.release \
+            -q -DforceStdout)
+
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            VERSION=$(mvn help:evaluate \
+              -Dexpression=java.version \
+              -q -DforceStdout)
+          fi
+
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            VERSION=$(mvn help:evaluate \
+              -Dexpression=maven.compiler.target \
+              -q -DforceStdout)
+          fi
+
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "::error::Could not determine Java version from pom.xml"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected Java version: $VERSION"
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: ${{ steps.java-version.outputs.version }}
           cache: maven
 
       - name: Build with Maven
         run: mvn clean package
 
+      - name: Read project version
+        id: project-version
+        shell: bash
+        run: |
+          VERSION=$(mvn help:evaluate \
+            -Dexpression=project.version \
+            -q -DforceStdout)
+
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "::error::Could not determine project version from pom.xml"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected project version: $VERSION"
+
       - name: Prepare release JAR
+        shell: bash
+        env:
+          VERSION: ${{ steps.project-version.outputs.version }}
         run: |
           mkdir -p release
-          
-          ORIGINAL_JAR=$(find target -maxdepth 1 -type f -name "*.jar" ! -name "original-*.jar" | head -n 1)
 
-          VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
+          ORIGINAL_JAR=$(find target \
+            -maxdepth 1 \
+            -type f \
+            -name "*.jar" \
+            ! -name "original-*.jar" \
+            | head -n 1)
+
+          if [ -z "$ORIGINAL_JAR" ]; then
+            echo "::error::No packaged JAR found in target/"
+            exit 1
+          fi
+
           cp "$ORIGINAL_JAR" "release/OneWayElytra-${VERSION}.jar"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+          echo "Prepared release/OneWayElytra-${VERSION}.jar"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: OneWayElytra-Artifact
-          path: release/
+          path: release/*.jar
+          if-no-files-found: error
 
   release:
     name: Create GitHub Release
@@ -59,33 +117,41 @@ jobs:
           name: OneWayElytra-Artifact
           path: release
 
-      - name: Read version from pom.xml
+      - name: Read project version
+        id: project-version
+        shell: bash
         run: |
-          VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          VERSION=$(mvn help:evaluate \
+            -Dexpression=project.version \
+            -q -DforceStdout)
+
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "::error::Could not determine project version from pom.xml"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected project version: $VERSION"
 
       - name: Check if release already exists
-        id: check_release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.project-version.outputs.version }}
         run: |
           if gh release view "v${VERSION}" > /dev/null 2>&1; then
-            echo "::error::Release v${VERSION} already exists! Workflow cancelled. Please adjust the version."
-            gh run cancel ${{ github.run_id }}
-            sleep 10
+            echo "::error::Release v${VERSION} already exists! Please adjust the version in pom.xml."
             exit 1
-          else
-            echo "Release v${VERSION} existiert noch nicht. Fahre fort..."
           fi
+
+          echo "Release v${VERSION} does not exist. Continuing..."
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release v${{ env.VERSION }}
-          tag_name: v${{ env.VERSION }}
+          name: Release v${{ steps.project-version.outputs.version }}
+          tag_name: v${{ steps.project-version.outputs.version }}
           target_commitish: master
           body_path: CHANGELOG.md
-          files: |
-            release/*.jar
+          files: release/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
