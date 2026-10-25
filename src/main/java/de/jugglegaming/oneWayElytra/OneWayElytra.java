@@ -1,7 +1,6 @@
 package de.jugglegaming.oneWayElytra;
 
 import de.jugglegaming.oneWayElytra.commands.OneWayElytraCommand;
-import de.jugglegaming.oneWayElytra.listeners.ElytraItemListener;
 import de.jugglegaming.oneWayElytra.listeners.OneWayElytraListener;
 import de.jugglegaming.oneWayElytra.managers.FileManager;
 import de.jugglegaming.oneWayElytra.managers.RadiusManager;
@@ -29,7 +28,6 @@ public final class OneWayElytra extends JavaPlugin {
     public ConsoleCommandSender ccs = Bukkit.getServer().getConsoleSender();
 
     private OneWayElytraListener oneWayElytraListener;
-    private ElytraItemListener elytraItemListener;
 
     private WorldguardFlags wgFlag;
     private WorldguardHook worldguardHook;
@@ -92,8 +90,6 @@ public final class OneWayElytra extends JavaPlugin {
     public void registerListener() {
         oneWayElytraListener = new OneWayElytraListener(this, worldguardHook);
         pluginManager.registerEvents(oneWayElytraListener, this);
-        elytraItemListener = new ElytraItemListener(this);
-        pluginManager.registerEvents(elytraItemListener, this);
     }
 
     @EventHandler

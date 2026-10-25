@@ -178,11 +178,15 @@ public class OneWayElytraListener implements Listener {
             }
             if(player.getInventory().getChestplate() != null){
                 ItemStack itemStack = player.getInventory().getChestplate();
-                ItemMeta meta = itemStack.getItemMeta();
-                PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
-                final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
-                if (dataContainer.has(key, PersistentDataType.BYTE)) {
-                    event.setCancelled(true);
+                if(itemStack.getItemMeta() != null) {
+                    ItemMeta meta = itemStack.getItemMeta();
+                    if (meta.getPersistentDataContainer() != null) {
+                        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                        final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                        if (dataContainer.has(key, PersistentDataType.BYTE)) {
+                            event.setCancelled(true);
+                        }
+                    }
                 }
             }
         }
@@ -268,7 +272,7 @@ public class OneWayElytraListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack chestplate = player.getInventory().getChestplate();
-        if(playersFlying.contains(player)){
+        //if(playersFlying.contains(player)){
             if (chestplate != null && chestplate.hasItemMeta()) {
                 PersistentDataContainer container = chestplate.getItemMeta().getPersistentDataContainer();
                 final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
@@ -276,14 +280,14 @@ public class OneWayElytraListener implements Listener {
                     event.setCancelled(true);
                 }
             }
-        }
+        //}
     }
 
     @EventHandler
     public void onItemClick(InventoryClickEvent event){
         if (!(event.getWhoClicked() instanceof Player)) return;
         Player player = (Player) event.getWhoClicked();
-        if(playersFlying.contains(player)){
+        //if(playersFlying.contains(player)){
             final NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
             if (event.getSlotType() == InventoryType.SlotType.ARMOR) {
                 ItemStack current = event.getCurrentItem();
@@ -303,6 +307,6 @@ public class OneWayElytraListener implements Listener {
                     }
                 }
             }
-        }
+        //}
     }
 }

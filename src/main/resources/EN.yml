@@ -3,7 +3,7 @@
 ##
 
 # Do not change the config-version unless you know what you are doing!
-config-version: 3
+config-version: 5
 
 prefix: '&5OWE &f»'
 commandDenied: '&cYou are not allowed to execute this command!'
@@ -13,6 +13,8 @@ locationNotFound: '&cThis location does not exist!'
 radiusSet: '&7You set the radius to &e%radius%&7 &7for location &e%location%&7.'
 wrongArgs: '&cYou tried to use wrong arguments. Please check &4/onewayelytra&c.'
 areaEntryNotAllowed: '&cYou are not allowed to enter this area while flying!'
+playerNotFound: '&cThis player is not online!'
+elytraItemName: '&6OneWayElytra'
 boostMessage: '&7Click into the air to get a boost!'
 world: 'World'
 radius: 'Radius'

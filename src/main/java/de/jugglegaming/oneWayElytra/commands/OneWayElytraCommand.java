@@ -2,10 +2,14 @@ package de.jugglegaming.oneWayElytra.commands;
 
 import de.jugglegaming.oneWayElytra.OneWayElytra;
 import de.jugglegaming.oneWayElytra.listeners.OneWayElytraListener;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -114,10 +118,10 @@ public class OneWayElytraCommand implements CommandExecutor {
                         } else {
                             player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
                         }
-                    } else if (args[0].equalsIgnoreCase("tag")){
+                    } else if (args[0].equalsIgnoreCase("tag")) {
                         //TODO: REMOVE COMMAND IF NEEDED AND FIND ANOTHER SOLUTION
-                        if (args[1].equalsIgnoreCase("add")){
-                            if(player.getInventory().getChestplate() != null){
+                        if (args[1].equalsIgnoreCase("add")) {
+                            if (player.getInventory().getChestplate() != null) {
                                 ItemStack itemStack = player.getInventory().getChestplate();
                                 ItemMeta meta = itemStack.getItemMeta();
                                 PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
@@ -126,7 +130,7 @@ public class OneWayElytraCommand implements CommandExecutor {
                                 itemStack.setItemMeta(meta);
                                 player.sendMessage("Successfully added tag");
                             }
-                        } else if (args[1].equalsIgnoreCase("remove")){
+                        } else if (args[1].equalsIgnoreCase("remove")) {
                             ItemStack itemStack = player.getInventory().getChestplate();
                             if (itemStack == null || !itemStack.hasItemMeta()) {
                                 player.sendMessage(oneWayElytra.prefix + "No tagged chestplate equipped.");
@@ -138,13 +142,34 @@ public class OneWayElytraCommand implements CommandExecutor {
                             dataContainer.remove(key);
                             itemStack.setItemMeta(meta);
                             player.sendMessage("Successfully removed tag");
-                        } else if(args[1].equalsIgnoreCase("info")){
-                            if(player.getInventory().getChestplate() != null){
+                        } else if (args[1].equalsIgnoreCase("info")) {
+                            if (player.getInventory().getChestplate() != null) {
                                 ItemStack itemStack = player.getInventory().getChestplate();
                                 ItemMeta meta = itemStack.getItemMeta();
                                 PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
                                 player.sendMessage(dataContainer.toString());
                             }
+                        }
+                    } else if (args[0].equalsIgnoreCase("give")){
+                        Player target = Bukkit.getPlayerExact(args[1]);
+                        if(target == null){
+                            player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("playerNotFound")));
+                            return true;
+                        }
+
+                        //If online, then do
+                        if(target.getInventory().firstEmpty() != -1){
+                            ItemStack itemStack = new ItemStack(Material.ELYTRA);
+                            ItemMeta meta = itemStack.getItemMeta();
+                            meta.setItemName(oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("elytraItemName")));
+                            meta.setUnbreakable(true);
+                            meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                            PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+                            NamespacedKey key = new NamespacedKey(oneWayElytra, "onewayelytra-elytraitem");
+                            dataContainer.set(key, PersistentDataType.BYTE, (byte) 1);
+                            itemStack.setItemMeta(meta);
+                            target.getInventory().setItem(target.getInventory().firstEmpty(), itemStack);
+                            player.sendMessage("Successfully added tag");
                         }
                     } else {
                         player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
@@ -157,6 +182,7 @@ public class OneWayElytraCommand implements CommandExecutor {
                     player.sendMessage(oneWayElytra.prefix + "§7/onewayelytra location <add/delete> [name]");
                     player.sendMessage(oneWayElytra.prefix + "§7/onewayelytra location set [name] radius [number]");
                     player.sendMessage(oneWayElytra.prefix + "§7/onewayelytra location list");
+                    player.sendMessage(oneWayElytra.prefix + "§7/onewayelytra give [player]");
                 }
             } else {
                 player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("commandDenied")));
