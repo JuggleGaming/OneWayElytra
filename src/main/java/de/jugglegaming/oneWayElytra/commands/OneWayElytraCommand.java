@@ -118,7 +118,7 @@ public class OneWayElytraCommand implements CommandExecutor {
                         } else {
                             player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
                         }
-                    } else if (args[0].equalsIgnoreCase("tag")) {
+                    /*} else if (args[0].equalsIgnoreCase("tag")) {
                         //TODO: REMOVE COMMAND IF NEEDED AND FIND ANOTHER SOLUTION
                         if (args[1].equalsIgnoreCase("add")) {
                             if (player.getInventory().getChestplate() != null) {
@@ -150,6 +150,7 @@ public class OneWayElytraCommand implements CommandExecutor {
                                 player.sendMessage(dataContainer.toString());
                             }
                         }
+                        */
                     } else if (args[0].equalsIgnoreCase("give")){
                         Player target = Bukkit.getPlayerExact(args[1]);
                         if(target == null){
