@@ -1,3 +1,4 @@
+```yaml
 name: Build & Release
 
 on:
@@ -22,24 +23,27 @@ jobs:
         id: java-version
         shell: bash
         run: |
-          VERSION=$(mvn help:evaluate \
-            -Dexpression=maven.compiler.release \
-            -q -DforceStdout)
+          VERSION=$(sed -n \
+            's/.*<maven.compiler.release>\([^<]*\)<\/maven.compiler.release>.*/\1/p' pom.xml | head -n 1)
 
-          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
-            VERSION=$(mvn help:evaluate \
-              -Dexpression=java.version \
-              -q -DforceStdout)
+          if [ -z "$VERSION" ]; then
+            VERSION=$(sed -n \
+              's/.*<maven.compiler.source>\([^<]*\)<\/maven.compiler.source>.*/\1/p' pom.xml | head -n 1)
           fi
 
-          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
-            VERSION=$(mvn help:evaluate \
-              -Dexpression=maven.compiler.target \
-              -q -DforceStdout)
+          if [ -z "$VERSION" ]; then
+            VERSION=$(sed -n \
+              's/.*<maven.compiler.target>\([^<]*\)<\/maven.compiler.target>.*/\1/p' pom.xml | head -n 1)
           fi
 
-          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+          if [ -z "$VERSION" ]; then
+            VERSION=$(sed -n \
+              's/.*<java.version>\([^<]*\)<\/java.version>.*/\1/p' pom.xml | head -n 1)
+          fi
+
+          if ! [[ "$VERSION" =~ ^[0-9]+$ ]]; then
             echo "::error::Could not determine Java version from pom.xml"
+            echo "Make sure pom.xml contains maven.compiler.release, maven.compiler.source, maven.compiler.target or java.version."
             exit 1
           fi
 
@@ -111,6 +115,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Java for Maven
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
@@ -155,3 +166,4 @@ jobs:
           files: release/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
