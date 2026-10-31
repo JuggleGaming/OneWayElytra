@@ -54,8 +54,26 @@ public class OneWayElytraListener implements Listener {
                 }
 
                 boolean inRadiusArea =
-                        oneWayElytra.getRadiusManager()
+                        oneWayElytra.getAreaManager()
                                 .isInAnyArea(player.getLocation());
+
+                boolean inStartMessageArea =
+                        oneWayElytra.getAreaManager()
+                                .isInAnyStartMessageArea(player.getLocation());
+
+                if (inStartMessageArea
+                        && !playersFlying.contains(player)
+                        && (player.getGameMode() == GameMode.SURVIVAL
+                        || player.getGameMode() == GameMode.ADVENTURE)) {
+
+                    ActionBar.send(player,
+                            oneWayElytra.getTools().replaceVariables(
+                                    oneWayElytra.getFileManager()
+                                            .getMessages()
+                                            .getString("flyAvailable")
+                            )
+                    );
+                }
 
                 boolean hasTaggedElytra = false;
                 ItemStack chestplate = player.getInventory().getChestplate();
@@ -197,7 +215,7 @@ public class OneWayElytraListener implements Listener {
         if (worldguardHook != null) {
             wgStartAllowed = worldguardHook.canStart(player);
         }
-        boolean inRadiusArea = oneWayElytra.getRadiusManager().isInAnyArea(player.getLocation());
+        boolean inRadiusArea = oneWayElytra.getAreaManager().isInAnyArea(player.getLocation());
         boolean hasTaggedElytra = false;
 
         ItemStack chestplate = player.getInventory().getChestplate();
