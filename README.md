@@ -58,6 +58,9 @@ language: EN
 # default radius in blocks
 radius: 16
 
+# default fly message status
+jumpToFlyMessage: false
+
 # multiplier for the boost (standard: 5)
 boostMultiplier: 5
 
