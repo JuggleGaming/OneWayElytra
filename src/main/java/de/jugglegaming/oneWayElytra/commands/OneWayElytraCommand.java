@@ -9,7 +9,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -41,13 +40,25 @@ public class OneWayElytraCommand implements CommandExecutor {
                                             oneWayElytra.getFileManager().getConfig().set("locations." + locationName + ".radius", radius);
                                             oneWayElytra.getFileManager().saveConfig();
                                             player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("radiusSet"), Integer.valueOf(args[4]), locationName));
-                                            oneWayElytra.getRadiusManager().loadAreas(oneWayElytra.getFileManager().getConfig());
+                                            oneWayElytra.getAreaManager().loadAreas(oneWayElytra.getFileManager().getConfig());
                                         } else {
                                             sender.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("valueMustBeHigherOrEqual")));
                                         }
                                     } catch(NumberFormatException e){
                                         sender.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("valueMustBeInt")));
                                     }
+                                } else if(args[3].equalsIgnoreCase("message")){
+                                    if(!args[4].equalsIgnoreCase("true") && !args[4].equalsIgnoreCase("false")){
+                                        player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
+                                        return false;
+                                    }
+                                    boolean jumpToFlyMessageBool = Boolean.parseBoolean(args[4]);
+                                    oneWayElytra.getFileManager().getConfig().set("locations." + locationName + ".jumpToFlyMessage", jumpToFlyMessageBool);
+                                    oneWayElytra.getFileManager().saveConfig();
+                                    player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("messageBooleanSet"), args[2], jumpToFlyMessageBool));
+                                    oneWayElytra.getAreaManager().loadAreas(oneWayElytra.getFileManager().getConfig());
+                                } else {
+                                    player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("locationNotFound")));
                                 }
                             } else {
                                 player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("locationNotFound")));
@@ -73,8 +84,9 @@ public class OneWayElytraCommand implements CommandExecutor {
                                     oneWayElytra.getFileManager().getConfig().set("locations." + locationName + ".y", player.getLocation().getY());
                                     oneWayElytra.getFileManager().getConfig().set("locations." + locationName + ".z", player.getLocation().getZ());
                                     oneWayElytra.getFileManager().getConfig().set("locations." + locationName + ".radius", oneWayElytra.getFileManager().getConfig().getInt("radius"));
+                                    oneWayElytra.getFileManager().getConfig().set("locations." + locationName + ".jumpToFlyMessage", oneWayElytra.getFileManager().getConfig().getBoolean("jumpToFlyMessage"));
                                     oneWayElytra.getFileManager().saveConfig();
-                                    oneWayElytra.getRadiusManager().loadAreas(oneWayElytra.getFileManager().getConfig());
+                                    oneWayElytra.getAreaManager().loadAreas(oneWayElytra.getFileManager().getConfig());
                                     player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("locationSet"), locationName));
                                 } else{
                                     player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("locationNotFound")));
@@ -86,7 +98,7 @@ public class OneWayElytraCommand implements CommandExecutor {
                                 if(oneWayElytra.getFileManager().getConfig().getSection("locations").contains(locationName)) {
                                     oneWayElytra.getFileManager().getConfig().remove("locations." + locationName);
                                     oneWayElytra.getFileManager().saveConfig();
-                                    oneWayElytra.getRadiusManager().loadAreas(oneWayElytra.getFileManager().getConfig());
+                                    oneWayElytra.getAreaManager().loadAreas(oneWayElytra.getFileManager().getConfig());
                                     player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("locationRemoved"), locationName));
                                 } else{
                                     player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("locationNotFound")));
@@ -184,6 +196,7 @@ public class OneWayElytraCommand implements CommandExecutor {
                 if (args.length == 0){
                     player.sendMessage(oneWayElytra.prefix + "§7/onewayelytra location <add/delete> [name]");
                     player.sendMessage(oneWayElytra.prefix + "§7/onewayelytra location set [name] radius [number]");
+                    player.sendMessage(oneWayElytra.prefix + "§7/onewayelytra location set [name] message [true/false]");
                     player.sendMessage(oneWayElytra.prefix + "§7/onewayelytra location list");
                     player.sendMessage(oneWayElytra.prefix + "§7/onewayelytra give [player]");
                 }

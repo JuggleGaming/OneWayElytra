@@ -37,6 +37,20 @@ public String replaceVariables(String text, String location) {
             .replaceAll("%location%", location + "");
 }
 
+  public String replaceVariables(String text, String location, boolean jumpToFlyMessageBool) {
+    return ChatColor.translateAlternateColorCodes('&', text)
+            .replaceAll("%>>%", "»")
+            .replaceAll("%<<%", "«")
+            .replaceAll("%ue%", "ü")
+            .replaceAll("%ae%", "ä")
+            .replaceAll("%oe%", "ö")
+            .replaceAll("%ss%", "ß")
+            .replaceAll("%coin%", "⛂")
+            .replaceAll("%coins%", "⛃")
+            .replaceAll("%location%", location + "")
+            .replaceAll("%messageboolean%", jumpToFlyMessageBool + "");
+  }
+
   public String replaceVariables(String text, Integer integer) {
     return ChatColor.translateAlternateColorCodes('&', text)
             .replaceAll("%>>%", "»")

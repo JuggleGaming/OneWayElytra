@@ -2,6 +2,7 @@ package de.jugglegaming.oneWayElytra.listeners;
 
 import de.jugglegaming.oneWayElytra.OneWayElytra;
 import de.jugglegaming.oneWayElytra.utils.ActionBar;
+import de.jugglegaming.oneWayElytra.utils.RadiusArea;
 import de.jugglegaming.oneWayElytra.utils.WorldguardHook;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
@@ -53,9 +54,38 @@ public class OneWayElytraListener implements Listener {
                     wgStartAllowed = worldguardHook.canStart(player);
                 }
 
-                boolean inRadiusArea =
-                        oneWayElytra.getRadiusManager()
-                                .isInAnyArea(player.getLocation());
+                boolean inRadiusArea = false;
+                boolean inStartMessageArea = false;
+
+                Location playerLocation = player.getLocation();
+                for (RadiusArea area : oneWayElytra.getAreaManager().getAreas()) {
+                    if (area.isInside(playerLocation)) {
+                        inRadiusArea = true;
+                        if (area.isStartMessageEnabled()) {
+                            inStartMessageArea = true;
+                        }
+                        if (inStartMessageArea) {
+                            break;
+                        }
+                    }
+                }
+
+                if (inStartMessageArea
+                        && !playersFlying.contains(player)
+                        && (player.getGameMode() == GameMode.SURVIVAL
+                        || (player.getGameMode() == GameMode.ADVENTURE
+                        && oneWayElytra.getFileManager()
+                        .getConfig()
+                        .getBoolean("adventure")))) {
+
+                    ActionBar.send(player,
+                            oneWayElytra.getTools().replaceVariables(
+                                    oneWayElytra.getFileManager()
+                                            .getMessages()
+                                            .getString("flyAvailable")
+                            )
+                    );
+                }
 
                 boolean hasTaggedElytra = false;
                 ItemStack chestplate = player.getInventory().getChestplate();
@@ -197,7 +227,7 @@ public class OneWayElytraListener implements Listener {
         if (worldguardHook != null) {
             wgStartAllowed = worldguardHook.canStart(player);
         }
-        boolean inRadiusArea = oneWayElytra.getRadiusManager().isInAnyArea(player.getLocation());
+        boolean inRadiusArea = oneWayElytra.getAreaManager().isInAnyArea(player.getLocation());
         boolean hasTaggedElytra = false;
 
         ItemStack chestplate = player.getInventory().getChestplate();

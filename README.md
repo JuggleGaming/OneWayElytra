@@ -2,12 +2,14 @@
 # OneWayElytra
 Do you want to glide from your spawn into the unknown? Even without ever entering the end? This plugin adds a one-way-elytra for your spawn. Players are able to fly into the air and boost once they are in the air.
 
+Just double jump and you are ready to fly!
+
 <img src="/.github/pictures/example.gif" width="400">
 
 ## Features
 - 🪽 fly into the air without an elytra
 - 🚀 boost once while flying
-- ▦ worldguard flag
+- ▦ worldguard flags
 
 ## Commands
 **/onewayelytra | /owe**
@@ -18,6 +20,9 @@ _Add or delete a location._
 
 **/onewayelytra location set [name] radius [number]**
 _Set the locations radius._
+
+**/onewayelytra location set [name] message [true/false]**
+_Set if the player should be shown a message, that the player is able to fly._
 
 **/onewayelytra location list**
 _List all locations._

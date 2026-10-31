@@ -3,7 +3,7 @@ package de.jugglegaming.oneWayElytra;
 import de.jugglegaming.oneWayElytra.commands.OneWayElytraCommand;
 import de.jugglegaming.oneWayElytra.listeners.OneWayElytraListener;
 import de.jugglegaming.oneWayElytra.managers.FileManager;
-import de.jugglegaming.oneWayElytra.managers.RadiusManager;
+import de.jugglegaming.oneWayElytra.managers.AreaManager;
 import de.jugglegaming.oneWayElytra.utils.Tools;
 import de.jugglegaming.oneWayElytra.utils.WorldguardFlags;
 import de.jugglegaming.oneWayElytra.utils.WorldguardHook;
@@ -21,7 +21,7 @@ public final class OneWayElytra extends JavaPlugin {
 
     public String prefix;
     private FileManager fileManager;
-    private RadiusManager radiusManager;
+    private AreaManager areaManager;
     public Tools tools;
     PluginManager pluginManager = Bukkit.getPluginManager();
 
@@ -45,7 +45,7 @@ public final class OneWayElytra extends JavaPlugin {
         fileManager = new FileManager(this);
         fileManager.loadConfig(Instance);
         ccs.sendMessage("[OneWayElytra] Config loaded.");
-        radiusManager = new RadiusManager(fileManager.getConfig());
+        areaManager = new AreaManager(fileManager.getConfig(), this);
         fileManager.loadMessages(Instance);
         ccs.sendMessage("[OneWayElytra] Language loaded: §7" + fileManager.getConfig().getString("language"));
         this.tools = new Tools(this);
@@ -109,7 +109,7 @@ public final class OneWayElytra extends JavaPlugin {
         }
     }
 
-    public RadiusManager getRadiusManager() {
-        return radiusManager;
+    public AreaManager getAreaManager() {
+        return areaManager;
     }
 }

@@ -3,7 +3,7 @@
 ##
 
 # Do not change the config-version unless you know what you are doing!
-config-version: 6
+config-version: 7
 
 prefix: '&5OWE &f»'
 commandDenied: '&cDu darfst diesen Befehl nicht verwenden'
@@ -11,6 +11,7 @@ locationSet: '&7Du hast die &7die Position &e%location% &7erfolgreich &agesetzt&
 locationRemoved: '&7Du hast die &7die Position &e%location% &7erfolgreich &cgelöscht&7.'
 locationNotFound: '&cDiese Position gibt es nicht'
 radiusSet: '&7Du hast den Radius von &e%location% &7auf &e%radius% &7gesetzt.'
+messageBooleanSet: '&7Du hast die Nachricht für &e%location% &7auf &e%messageboolean% &7gesetzt.'
 wrongArgs: '&cDu hast falsche Argumente verwendet. Verwende &4/onewayelytra&c.'
 giveItemToPlayer: '&7Du hast &e%player% &7erfolgreich eine Einwegelytra gegeben.'
 inventoryFull: '&cDas Inventar von &e%player% &cist voll.'
@@ -18,6 +19,7 @@ areaEntryNotAllowed: '&cDu darfst innerhalb dieses Bereichs nicht fliegen!'
 itemNotALlowed: '&cDu darfst hier die Einwegelytra nicht benutzen!'
 playerNotFound: '&cDieser Spieler ist nicht online!'
 elytraItemName: '&6Einwegelytren'
+flyAvailable: '&aVerwende einen Doppelsprung &7um in die Luft zu fliegen!'
 boostMessage: '&7Klicken, um einen Boost zu erhalten.'
 world: 'Welt'
 radius: 'Radius'

@@ -1,4 +1,5 @@
 package de.jugglegaming.oneWayElytra.managers;
+
 import de.jugglegaming.oneWayElytra.OneWayElytra;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
@@ -13,12 +14,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
-
 public class FileManager {
 
-    private OneWayElytra oneWayElytra;
+    private final OneWayElytra oneWayElytra;
 
-    private ConsoleCommandSender ccs = Bukkit.getServer().getConsoleSender();
+    private final ConsoleCommandSender ccs =
+            Bukkit.getServer().getConsoleSender();
 
     private static YamlDocument config;
     private static YamlDocument messages;
@@ -28,67 +29,127 @@ public class FileManager {
         this.oneWayElytra = oneWayElytra;
     }
 
-
     public void loadConfig(OneWayElytra oneWayElytra) {
         try {
-            config = YamlDocument.create(new File(oneWayElytra.getDataFolder(), "config.yml"),
-                    Objects.requireNonNull(getClass().getResourceAsStream("/config.yml")),
+            UpdaterSettings.Builder updater = UpdaterSettings.builder()
+                    .setVersioning(new BasicVersioning("config-version"))
+                    .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS);
+
+            for (int version = 1; version <= 100; version++) {
+                updater.addIgnoredRoute(String.valueOf(version), "locations", '.');
+            }
+
+            UpdaterSettings updaterSettings = updater.build();
+
+            config = YamlDocument.create(
+                    new File(oneWayElytra.getDataFolder(), "config.yml"),
+                    Objects.requireNonNull(
+                            getClass().getResourceAsStream("/config.yml")
+                    ),
                     GeneralSettings.DEFAULT,
-                    LoaderSettings.builder().setAutoUpdate(true).build(),
+                    LoaderSettings.builder()
+                            .setAutoUpdate(true)
+                            .build(),
                     DumperSettings.DEFAULT,
-                    UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version"))
-                            .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS).build()
+                    updaterSettings
             );
-            config.update();
+
             config.save();
+
         } catch (IOException e) {
-            ccs.sendMessage("§cCould not load config.yml. Shutting down this plugin...");
+            ccs.sendMessage(
+                    "§cCould not load config.yml. Shutting down this plugin..."
+            );
+            e.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(oneWayElytra);
         }
     }
 
     public void loadDatabase(OneWayElytra oneWayElytra) {
         try {
-            database = YamlDocument.create(new File(oneWayElytra.getDataFolder(), "database.yml"),
-                    Objects.requireNonNull(getClass().getResourceAsStream("/database.yml")),
+            database = YamlDocument.create(
+                    new File(oneWayElytra.getDataFolder(), "database.yml"),
+                    Objects.requireNonNull(
+                            getClass().getResourceAsStream("/database.yml")
+                    ),
                     GeneralSettings.DEFAULT,
-                    LoaderSettings.builder().setAutoUpdate(true).build(),
+                    LoaderSettings.builder()
+                            .setAutoUpdate(true)
+                            .build(),
                     DumperSettings.DEFAULT,
-                    UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version"))
-                            .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS).build()
+                    UpdaterSettings.builder()
+                            .setVersioning(
+                                    new BasicVersioning("config-version")
+                            )
+                            .setOptionSorting(
+                                    UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS
+                            )
+                            .build()
             );
+
             database.update();
             database.save();
+
         } catch (IOException e) {
-            ccs.sendMessage("§cCould not load database.yml. Shutting down this plugin...");
+            ccs.sendMessage(
+                    "§cCould not load database.yml. Shutting down this plugin..."
+            );
+            e.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(oneWayElytra);
         }
     }
 
     public void loadMessages(OneWayElytra oneWayElytra) {
         try {
-            File languagesFolder = new File(oneWayElytra.getDataFolder(), "languages");
+            File languagesFolder =
+                    new File(oneWayElytra.getDataFolder(), "languages");
+
             if (!languagesFolder.exists()) {
                 languagesFolder.mkdirs();
             }
-            messages = YamlDocument.create(new File(languagesFolder, config.getString("language") + ".yml"),
-                    Objects.requireNonNull(getClass().getResourceAsStream("/" + config.getString("language") + ".yml")),
+
+            messages = YamlDocument.create(
+                    new File(
+                            languagesFolder,
+                            config.getString("language") + ".yml"
+                    ),
+                    Objects.requireNonNull(
+                            getClass().getResourceAsStream(
+                                    "/" + config.getString("language") + ".yml"
+                            )
+                    ),
                     GeneralSettings.DEFAULT,
-                    LoaderSettings.builder().setAutoUpdate(true).build(),
+                    LoaderSettings.builder()
+                            .setAutoUpdate(true)
+                            .build(),
                     DumperSettings.DEFAULT,
-                    UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version"))
-                            .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS).build()
+                    UpdaterSettings.builder()
+                            .setVersioning(
+                                    new BasicVersioning("config-version")
+                            )
+                            .setOptionSorting(
+                                    UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS
+                            )
+                            .build()
             );
+
             messages.update();
             messages.save();
+
         } catch (IOException e) {
-            ccs.sendMessage("§cCould not load messages-file. Shutting down this plugin...");
+            ccs.sendMessage(
+                    "§cCould not load messages-file. Shutting down this plugin..."
+            );
+            e.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(oneWayElytra);
         }
     }
 
     public void saveConfig() {
-        if (config == null) return;
+        if (config == null) {
+            return;
+        }
+
         try {
             config.save();
         } catch (IOException e) {
@@ -96,7 +157,6 @@ public class FileManager {
             e.printStackTrace();
         }
     }
-
 
     public YamlDocument getConfig() {
         return config;
