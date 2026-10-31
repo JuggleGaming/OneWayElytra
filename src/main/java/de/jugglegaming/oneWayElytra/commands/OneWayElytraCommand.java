@@ -48,6 +48,10 @@ public class OneWayElytraCommand implements CommandExecutor {
                                         sender.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("valueMustBeInt")));
                                     }
                                 } else if(args[3].equalsIgnoreCase("message")){
+                                    if(!args[4].equalsIgnoreCase("true") && !args[4].equalsIgnoreCase("false")){
+                                        player.sendMessage(oneWayElytra.prefix + oneWayElytra.getTools().replaceVariables(oneWayElytra.getFileManager().getMessages().getString("wrongArgs")));
+                                        return false;
+                                    }
                                     boolean jumpToFlyMessageBool = Boolean.parseBoolean(args[4]);
                                     oneWayElytra.getFileManager().getConfig().set("locations." + locationName + ".jumpToFlyMessage", jumpToFlyMessageBool);
                                     oneWayElytra.getFileManager().saveConfig();
